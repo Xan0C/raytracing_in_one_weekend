@@ -4,9 +4,9 @@ use std::fmt;
 
 #[derive(Clone,Copy,Default)]
 pub struct Vec3 {
-    x: f64,
-    y: f64,
-    z: f64
+    pub x: f64,
+    pub y: f64,
+    pub z: f64
 }
 
 impl Vec3 {
@@ -18,12 +18,12 @@ impl Vec3 {
         return Vec3 { x:1., y:1., z:1. }
     }
 
-    pub fn lenSquared(&self) -> f64 {
+    pub fn len_squared(&self) -> f64 {
         return self.x*self.x + self.y * self.y + self.z * self.z;
     }
 
     pub fn len(&self) -> f64 {
-        return self.lenSquared().sqrt();
+        return self.len_squared().sqrt();
     }
 
     pub fn dot(&self, other: Vec3) -> f64 {
