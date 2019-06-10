@@ -1,43 +1,51 @@
-use super::vec::Vec3;
-use super::ray::Ray;
-use super::hit_record::HitRecord;
+use crate::ray::Ray;
+use crate::vec::Vec3;
+use crate::material::Material;
 
-pub trait Hitable {
-  fn hit(&self, r: &Ray, tmin: f32, tmax: f32, rec: &HitRecord) -> bool;
+pub struct HitRecord<'a> {
+    pub t: f32,
+    pub p: Vec3,
+    pub normal: Vec3,
+    pub material: &'a Material
+}
+
+impl<'a> HitRecord<'a> {
+    pub fn new(t: f32, p: Vec3, n: Vec3, material: &'a Material) -> Self {
+        HitRecord { t, p, normal: n, material }
+    }
+}
+
+pub trait Hitable: Send + Sync {
+    fn hit(&self, ray: &Ray, t_range: ::std::ops::Range<f32>) -> Option<HitRecord>;
 }
 
 pub struct HitableList {
-  pub list: Vec<Hitable>,
+  list: Vec<Box<Hitable>>
 }
 
 impl HitableList {
-  pub fn new() -> HitableList {
-        let xs = Vec::new();
-        HitableList { list: xs }
-    }
+  pub fn new() -> Self {
+    HitableList { list: Vec::new() }
+  }
+
+  pub fn push(&mut self, hitable: Box<Hitable>) {
+    self.list.push(hitable);
+  }
 }
 
 impl Hitable for HitableList {
-  fn hit(&self, r: &Ray, tmin: f32, tmax: f32, rec: &HitRecord) -> bool {
-    let mut temp_rec: HitRecord;
-    let mut hit_anything = false;
+  fn hit(&self, ray: &Ray, t_range: ::std::ops::Range<f32>) -> Option<HitRecord> {
+    let mut current = None;
+    let mut closest_so_far = t_range.end;
 
-    let mut closest_so_far = tmax;
-
-    for i in (0..self.size).rev()  {
-      if self.list[i].hit(r, tmin, closest_so_far, temp_rec) {
-        hit_anything = true;
-        closest_so_far = temp_rec.t;
-        rec = temp_rec;
+    for hitable in &(self.list) {
+      let hr = hitable.hit(ray, t_range.start..closest_so_far);
+      if let Some(HitRecord {t, ..}) = hr {
+        closest_so_far = t;
+        current = hr;
       }
     }
-    return hit_anything;
-}
-
-/*
-impl fmt::Debug for Hitable {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-      write!(f, "Hitable {{ aabb: {:?} }}", self.bounding_box())
+    
+    return current;
   }
 }
-*/

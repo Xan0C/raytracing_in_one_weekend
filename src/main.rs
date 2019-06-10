@@ -1,52 +1,41 @@
+extern crate rand;
+extern crate lodepng;
+
 mod ray;
 mod vec;
 mod color;
-mod hit_record;
-//mod hitable;
-//mod sphere;
+mod sphere;
+mod hitable;
+mod camera;
+mod material;
+mod math;
 
-mod chapter2;
-mod chapter3;
-mod chapter4;
-mod chapter5;
-//mod chapter6;
+mod render;
 
-use std::fs::File;
-use std::io::prelude::*;
+use std::time::Instant;
 
 fn main() {
+    let start = Instant::now();
 
-    // Chapter 1
-    /*
-    let buffer = chapter2::run(200, 100);
-    let mut output = File::create("output.ppm").expect("Failed to create file output.ppm");
-    output.write_all(&buffer[..]).expect("Failed to write PPM to output.ppm");
-    */
+    let width: usize = 1920;
+    let height: usize = 1080;
+    let rays = 100;
 
-    // Chapter 3
-    /*
-    let buffer = chapter3::run(200, 100);
-    let mut output = File::create("output.ppm").expect("Failed to create file output.ppm");
-    output.write_all(&buffer[..]).expect("Failed to write PPM to output.ppm");
-    */
+    let pixels = render::render(width, height, rays);
 
-    // Chapter 4
-    /*
-    let buffer = chapter4::run(200, 100);
-    let mut output = File::create("output.ppm").expect("Failed to create file output.ppm");
-    output.write_all(&buffer[..]).expect("Failed to write PPM to output.ppm");
-    */
-    // Chapter 5
-    
-    let buffer = chapter5::run(200, 100);
-    let mut output = File::create("output.ppm").expect("Failed to create file output.ppm");
-    output.write_all(&buffer[..]).expect("Failed to write PPM to output.ppm");
-    
+    let time = Instant::now() - start;
+    let time_secs = time.as_secs();
+    let time_millis = time.subsec_millis();
 
-    // Chapter 6
-    /*
-    let buffer = chapter6::run(200, 100);
-    let mut output = File::create("output.ppm").expect("Failed to create file output.ppm");
-    output.write_all(&buffer[..]).expect("Failed to write PPM to output.ppm");
-    */
+    println!(
+        "Done in {} seconds.",
+        time_secs as f32 + time_millis as f32 / 1000.0
+    );
+
+    let filename = "output.png";
+    match lodepng::encode24_file(filename, &pixels, width, height) {
+        Ok(()) => {}
+        Err(err) => println!("Error writing file \"{}\": {}", filename, err)
+    }
+
 }

@@ -1,15 +1,35 @@
-use super::ray::Ray;
-use super::vec::Vec3;
-use super::hitable::Hitable;
-use super::hit_record::HitRecord;
+use crate::ray::Ray;
+use crate::vec::Vec3;
+use crate::hitable::Hitable;
+use crate::hitable::HitRecord;
+use crate::material::Material;
 
-pub struct Sphere {
-    pub radius: f64,
-    pub center: Vec3
+use rand::random;
+
+pub fn random_in_unit_sphere() -> Vec3 {
+    let mut p: Vec3;
+    while {
+         p = Vec3::new(random::<f32>(), random::<f32>(), random::<f32>()) * 2.0 - Vec3::new(1.0, 1.0, 1.0);
+         p.len_squared() >= 1.0
+    } {}
+
+    return p;
 }
 
-impl Hitable for Sphere {
-    fn hit(&self, r: &Ray, tmin: f32, tmax: f32, rec: &HitRecord) -> bool {
+pub struct Sphere {
+    radius: f32,
+    center: Vec3,
+    material: Box<Material>
+}
+
+impl Sphere {
+    pub fn new(orig: Vec3, rad: f32, material: Box<Material>) -> Self {
+        Sphere { radius: rad, center: orig , material }
+    }
+}
+
+impl<'a> Hitable for Sphere {
+    fn hit(&self, r: &Ray, t_range: ::std::ops::Range<f32>) -> Option<HitRecord> {
         let oc = r.origin() - self.center;
         let a = r.direction().dot(r.direction());
         let b = oc.dot(r.direction());
@@ -17,24 +37,23 @@ impl Hitable for Sphere {
 
         let discriminant = b * b - a * c;
 
-        if discriminant > 0 {
-            let mut temp = (-b - (b * b - a * c).sqrt()) / a;
+        if discriminant > 0.0 {
+            let t = (-b - (b * b - a * c).sqrt()) / a;
 
-            if temp < tmax && temp > tmin {
-                rec.t = temp;
-                rec.p = r.point_at_parameter(rec.t);
-                rec.normal = (rec.p - center) / radius;
-                return true;
+            if t < t_range.end && t > t_range.start {
+                let p = r.point_at_parameter(t);
+                let normal = (p - self.center) / self.radius;
+                return Some(HitRecord::new(t, p, normal, &*self.material));
             }
 
-            temp = (-b + (b * b - a * c).sqrt())/a;
-            if temp < tmax && temp > tmin {
-                rec.t = temp;
-                rec.p = r.point_at_parameter(rec.t);
-                rec.normal = (rec.p - center) / radius;
-                return true;
+            let t = (-b + (b * b - a * c).sqrt()) / a;
+            if t < t_range.end && t > t_range.start {
+                let p = r.point_at_parameter(t);
+                let normal = (p - self.center) / self.radius;
+                return Some(HitRecord::new(t, p, normal, &*self.material));
             }
         }
-        return false;
+
+        return None;
     }
 }
