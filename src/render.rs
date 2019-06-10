@@ -9,7 +9,6 @@ use crate::material::Diffuse;
 use crate::material::Metal;
 use crate::material::Dielectric;
 
-use rand::Rng;
 use rand::random;
 use std::f32::consts::PI;
 use lodepng::RGB;
@@ -143,29 +142,6 @@ pub fn render(width: usize, height: usize, samples: usize) -> Vec<RGB<u8>> {
         p.g = icolor.1;
         p.b = icolor.2;
     });
-    /*
-    for j in (0..ny).rev()  {
-        for i in 0..nx {
-            let mut col = Vec3::new(0.0, 0.0, 0.0);
-            for _s in 0..ns {
-                let u = (i as f32 + rng.gen::<f32>()) / nx as f32;
-                let v = (j as f32 + rng.gen::<f32>()) / ny as f32;
-                let r = camera.get_ray(u, v);
-                col += color_ray(&r, &*scene, 0);
-            }
 
-            col /= ns as f32;
-            col = Vec3::new( col.x.sqrt(), col.y.sqrt(), col.z.sqrt());
-
-            let icolor = color::Color (
-                (255.99 * col.x) as u8,
-                (255.99 * col.y) as u8,
-                (255.99 * col.z) as u8
-            );
-
-            pixels.push(RGB { r: icolor.0, g: icolor.1, b: icolor.2 });
-        }
-    }
-    */
     return pixels;
 }
